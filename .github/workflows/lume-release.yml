@@ -50,7 +50,7 @@ jobs:
       - name: Select stable Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: "26.5"
 
       - name: Show Xcode version
         run: xcodebuild -version
@@ -60,10 +60,7 @@ jobs:
         run: |
           xcodebuild -resolvePackageDependencies \
             -project Lume.xcodeproj \
-            -scheme Lume \
-            SWIFT_VERSION=5.0 \
-            SWIFT_APPROACHABLE_CONCURRENCY=NO \
-            SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY=NO
+            -scheme Lume
 
       - name: Build unsigned app
         working-directory: Lume
@@ -82,9 +79,6 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
-            SWIFT_VERSION=5.0 \
-            SWIFT_APPROACHABLE_CONCURRENCY=NO \
-            SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY=NO \
             build | tee "$RUNNER_TEMP/xcodebuild.log"
 
       - name: Package IPA and generate AltStore JSON
