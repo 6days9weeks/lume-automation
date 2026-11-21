@@ -52,13 +52,11 @@ jobs:
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "Mirror updated to $UPSTREAM_SHA"
 
-      - name: Trigger build workflow in mirror
+      - name: Trigger build workflow in automation repo
         if: steps.sync.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ secrets.MIRROR_REPO_TOKEN }}
-          OWNER: 6days9weeks
-          REPO: Lume
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh workflow run lume-release.yml \
-            --repo "${OWNER}/${REPO}" \
+            --repo "6days9weeks/lume-automation" \
             --ref main
