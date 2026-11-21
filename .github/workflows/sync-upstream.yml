@@ -16,7 +16,6 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     outputs:
       changed: ${{ steps.sync.outputs.changed }}
       upstream_sha: ${{ steps.sync.outputs.upstream_sha }}
@@ -56,10 +55,10 @@ jobs:
       - name: Trigger build workflow in mirror
         if: steps.sync.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ secrets.MIRROR_REPO_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           OWNER: 6days9weeks
           REPO: Lume
         run: |
           gh workflow run lume-release.yml \
-            --repo "${OWNER}/${REPO}" \
+            --repo "6days9weeks/lume-automation" \
             --ref main
