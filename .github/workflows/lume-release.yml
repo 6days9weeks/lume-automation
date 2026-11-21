@@ -58,7 +58,7 @@ jobs:
       - name: Apply build compatibility patches
         working-directory: Lume
         run: |
-          python3 -c 'from pathlib import Path; p=Path("Lume/Views/Series/SeriesDetailView.swift"); s=p.read_text(); old="                    withAnimation(.easeInOut(duration: 0.3)) {\n                        isLoadingTMDB = false\n                    }\n"; new="                    let loadingAnimation = Animation.easeInOut(duration: 0.3)\n                    withAnimation(loadingAnimation) {\n                        isLoadingTMDB = false\n                    }\n"; assert old in s, f"Expected patch not found in {p}"; p.write_text(s.replace(old, new, 1))'
+          python3 -c 'from pathlib import Path; p=Path("Lume/Views/Series/SeriesDetailView.swift"); s=p.read_text(); old="                    let loadingAnimation = Animation.easeInOut(duration: 0.3)\n                    withAnimation(loadingAnimation) {\n                        isLoadingTMDB = false\n                    }\n"; assert old in s, f"Expected patch not found in {p}"; p.write_text(s.replace(old, "                    isLoadingTMDB = false\n", 1))'
 
       - name: Resolve Swift packages
         working-directory: Lume
