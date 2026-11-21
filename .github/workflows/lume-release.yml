@@ -33,6 +33,20 @@ jobs:
           ref: main
           path: LumeEngine
 
+      - name: Check out LumeRecorder beside Lume
+        uses: actions/checkout@v4
+        with:
+          repository: bilipp/LumeRecorder
+          ref: main
+          path: LumeRecorder
+
+      - name: Check out LumeCloud beside Lume
+        uses: actions/checkout@v4
+        with:
+          repository: bilipp/LumeCloud
+          ref: main
+          path: LumeCloud
+
       - name: Select stable Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
