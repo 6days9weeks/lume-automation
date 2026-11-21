@@ -1,0 +1,64 @@
+name: Sync upstream Lume and trigger release
+
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.sync.outputs.changed }}
+      upstream_sha: ${{ steps.sync.outputs.upstream_sha }}
+    steps:
+      - name: Check out automation repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure upstream and sync mirror
+        id: sync
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_REPO_TOKEN }}
+          OWNER: 6days9weeks
+          MIRROR_REPO: Lume
+          UPSTREAM_REPO: bilipp/Lume
+        run: |
+          set -euo pipefail
+          git clone --bare "https://x-access-token:${MIRROR_TOKEN}@github.com/${OWNER}/${MIRROR_REPO}.git" mirror.git
+          cd mirror.git
+          git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
+          git fetch upstream main
+          UPSTREAM_SHA="$(git rev-parse FETCH_HEAD)"
+          CURRENT_SHA="$(git rev-parse refs/heads/main 2>/dev/null || true)"
+
+          echo "upstream_sha=$UPSTREAM_SHA" >> "$GITHUB_OUTPUT"
+          if [ "$CURRENT_SHA" = "$UPSTREAM_SHA" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Mirror already matches upstream."
+            exit 0
+          fi
+
+          git push origin "+FETCH_HEAD:refs/heads/main"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "Mirror updated to $UPSTREAM_SHA"
+
+      - name: Trigger build workflow in mirror
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.MIRROR_REPO_TOKEN }}
+          OWNER: 6days9weeks
+          REPO: Lume
+        run: |
+          gh workflow run lume-release.yml \
+            --repo "${OWNER}/${REPO}" \
+            --ref main
